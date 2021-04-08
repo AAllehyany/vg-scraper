@@ -10,6 +10,16 @@ import requests
 from fpdf import FPDF
 from deck import CardEntry
 from proxy_generator import generate_pdf_proxy
+import boto3
+import os
+from os.path import join, dirname
+from dotenv import load_dotenv
+
+dotenv_path = join(dirname(__file__), '.env')
+load_dotenv(dotenv_path)
+
+accessKey= os.environ.get("ACCESSKEY")
+secretKey= os.environ.get("SECRETKEY")
 
 CARD_W=59
 CARD_H=86
@@ -47,4 +57,11 @@ pdf = generate_pdf_proxy({
     "y_padding": PADDING_H
 }, deck)
 
+
+s3 = boto3.resource('s3', 
+    endpoint_url = 'https://s3.eu-central-1.wasabisys.com',
+    aws_access_key_id = accessKey,
+    aws_secret_access_key = secretKey)
+pdf_decks_bucket = s3.Bucket('deck-pdfs')
 pdf.output("deck.pdf", 'F')
+pdf_decks_bucket.upload_file("deck.pdf", "the-deck-spike.pdf")
