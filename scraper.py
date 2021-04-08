@@ -5,7 +5,6 @@ from webdriver_manager.utils import ChromeType
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.by import By
-from PIL import Image
 import requests
 from fpdf import FPDF
 from deck import CardEntry
@@ -28,7 +27,9 @@ PADDING_H = 10
 MARGIN_W = 5
 MARGIN_H = 5
 
-driver = webdriver.Chrome(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
+driver = webdriver.PhantomJS()
+driver.set_window_size(1120, 500)
+# driver = webdriver.Chrome(ChromeDriverManager(chrome_type=ChromeType.CHROMIUM).install())
 page_link = "https://decklog.bushiroad.com/view/B2RN"
 driver.get(page_link)
 
@@ -58,10 +59,14 @@ pdf = generate_pdf_proxy({
 }, deck)
 
 
-s3 = boto3.resource('s3', 
+client = boto3.client('s3', 
     endpoint_url = 'https://s3.eu-central-1.wasabisys.com',
     aws_access_key_id = accessKey,
     aws_secret_access_key = secretKey)
-pdf_decks_bucket = s3.Bucket('deck-pdfs')
-pdf.output("deck.pdf", 'F')
-pdf_decks_bucket.upload_file("deck.pdf", "the-deck-spike.pdf")
+output = pdf.output('file.pdf', 'S').encode('latin-1')
+client.put_object(
+    Body=output,
+    Bucket="deck-pdfs",
+    ACL="public-read",
+    Key="dee.pdf"
+)
