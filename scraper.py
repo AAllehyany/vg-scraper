@@ -20,8 +20,8 @@ load_dotenv(dotenv_path)
 accessKey= os.environ.get("ACCESSKEY")
 secretKey= os.environ.get("SECRETKEY")
 
-CARD_W=59
-CARD_H=86
+CARD_W=63
+CARD_H=88
 PADDING_W = 10
 PADDING_H = 10
 MARGIN_W = 5
