@@ -1,26 +1,51 @@
 from fastapi import FastAPI
 from decktopdf import scraper
+import typer
 
-CARD_W=63
-CARD_H=88
-PADDING_W = 10
-PADDING_H = 10
-MARGIN_W = 5
-MARGIN_H = 5
 ENDPOINT = 'https://s3.eu-central-1.wasabisys.com'
 
-settings = {
-    "card_width": CARD_W,
-    "card_height": CARD_H,
-    "x_margin": MARGIN_W,
-    "y_margin": MARGIN_H,
-    "x_padding": PADDING_W,
-    "y_padding": PADDING_H
+std_settings = {
+    "card_width": 63,
+    "card_height": 88,
+    "x_margin": 3,
+    "y_margin": 3,
+    "x_padding": 5,
+    "y_padding": 5,
+    "end_point": "https://s3.eu-central-1.wasabisys.com"
 }
 
-app = FastAPI()
+sml_settings = {
+    "card_width": 59,
+    "card_height": 86,
+    "x_margin": 5,
+    "y_margin": 5,
+    "x_padding": 8,
+    "y_padding": 8,
+    "end_point": "https://s3.eu-central-1.wasabisys.com"
+}
 
-@app.get("/")
-def index():
-    link = scraper.scrape_and_upload("M6H5", settings)
-    return {"deck_pdf": link}
+
+def main(code: str, standard: bool = typer.Option(False), jp: bool = typer.Option(False)):
+    
+    print(code)
+    settings = sml_settings
+    
+    if standard:
+        settings = std_settings
+
+    website = "https://decklog-en.bushiroad.com/view"
+
+    if jp:
+        website = "https://decklog.bushiroad.com/view"
+
+    sc = scraper.Scraper(code, ENDPOINT, settings, website)
+
+    try:
+        sc.scrape_deck()
+        print(sc.upload_deck())
+    except:
+        print("The deck code you have entered is invalid. Please make sure the deck code belongs to a real deck on the bushiroad website")
+    
+
+if __name__ == "__main__":
+    typer.run(main)
